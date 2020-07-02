@@ -5,10 +5,16 @@ var roleRepairer = require('role.repairer');
 var roleMinerEnergy = require('role.miner.energy');
 var creepSpawner = require('creep.spawner');
 var roleClaimer = require('role.claimer');
+var roleScout = require('role.scout');
 
 // RENEW CREEP LIVE https://docs.screeps.com/api/#StructureSpawn.renewCreep
 
 module.exports.loop = function () {
+    // delete Memory.scoutData;
+    if (Memory.scoutData == null) {
+        Memory.scoutData = {};
+    }
+
     var tower = Game.getObjectById('5efdf7f058a8675cc2a88fad');
     if (tower) {
         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
@@ -54,8 +60,11 @@ module.exports.loop = function () {
         if (creep.memory.role == 'miner.energy') {
             roleMinerEnergy.run(creep);
         }
-        if (creep.memory.role == 'claimer') {
+        /* if (creep.memory.role == 'claimer') {
             roleClaimer.run(creep, 'W7N3');
+        }*/
+        if (creep.memory.role == 'scout') {
+            roleScout.run(creep);
         }
     }
 };

@@ -26,6 +26,10 @@ var creepSettings = {
         base: [MOVE, CARRY, WORK],
         extensions: [MOVE, CARRY, WORK],
     },
+    scout: {
+        base: [MOVE],
+        extensions: [],
+    },
 };
 
 function calcBaseCost(creep) {
@@ -59,30 +63,39 @@ function getBodyParts(creep, maxEnergy) {
 var roleBuilder = {
     /** @param {Creep} creep **/
     run: function (spawn) {
+        if (spawn.spawning) {
+            var spawningCreep = Game.creeps[spawn.spawning.name];
+            spawn.room.visual.text('🛠️' + spawningCreep.memory.role, spawn.pos.x + 1, spawn.pos.y, {
+                align: 'left',
+                opacity: 0.8,
+            });
+        }
+
         var currentCreepCount = spawn.room.find(FIND_MY_CREEPS).length;
         if (spawn.memory.currentCreeps == 0 || spawn.memory.currentCreeps < currentCreepCount) {
             spawn.memory.currentCreeps = spawn.room.find(FIND_MY_CREEPS).length;
         }
         var maxEnergy = spawn.room.energyCapacityAvailable;
-        if (currentCreepCount < spawn.memory.currentCreeps - 3 || currentCreepCount < 3) {
+        var miners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner.energy');
+        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transport.spawn');
+        if (miners.length < 2 || harvesters.length < 2) {
             maxEnergy = 300;
+            console.log('ALARMALARMALARM MAX ENGERY NOW 300');
         }
 
-        var minerEnergy = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner.energy');
-        if (minerEnergy.length < 4) {
+        if (miners.length < 4) {
             var newName = 'Miner.Energy' + Game.time;
             console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('miner', spawn.room.energyCapacityAvailable), newName, {
+            spawn.spawnCreep(getBodyParts('miner', maxEnergy), newName, {
                 memory: { role: 'miner.energy' },
             });
             return;
         }
 
-        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'transport.spawn');
         if (harvesters.length < 3) {
             var newName = 'Transport Spawn' + Game.time;
             console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('transport', spawn.room.energyCapacityAvailable), newName, {
+            spawn.spawnCreep(getBodyParts('transport', maxEnergy), newName, {
                 memory: { role: 'transport.spawn' },
             });
 
@@ -90,20 +103,20 @@ var roleBuilder = {
         }
         var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
 
-        if (upgraders.length < 5) {
+        if (upgraders.length < 3) {
             var newName = 'Upgrader' + Game.time;
             console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('transport_build', spawn.room.energyCapacityAvailable), newName, {
+            spawn.spawnCreep(getBodyParts('transport_build', maxEnergy), newName, {
                 memory: { role: 'upgrader' },
             });
             return;
         }
         var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
 
-        if (builders.length < 3) {
+        if (builders.length < 2) {
             var newName = 'Builder' + Game.time;
             console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('builder', spawn.room.energyCapacityAvailable), newName, {
+            spawn.spawnCreep(getBodyParts('builder', maxEnergy), newName, {
                 memory: { role: 'builder' },
             });
             return;
@@ -111,20 +124,23 @@ var roleBuilder = {
 
         var repairer = _.filter(Game.creeps, (creep) => creep.memory.role == 'repairer');
 
-        if (repairer.length < 3) {
+        if (repairer.length < 2) {
             var newName = 'Repairer' + Game.time;
             console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('transport_build', spawn.room.energyCapacityAvailable), newName, {
+            spawn.spawnCreep(getBodyParts('transport_build', maxEnergy), newName, {
                 memory: { role: 'repairer' },
             });
+            return;
         }
+        var scouts = _.filter(Game.creeps, (creep) => creep.memory.role == 'scout');
 
-        if (spawn.spawning) {
-            var spawningCreep = Game.creeps[spawn.spawning.name];
-            spawn.room.visual.text('🛠️' + spawningCreep.memory.role, spawn.pos.x + 1, spawn.pos.y, {
-                align: 'left',
-                opacity: 0.8,
+        if (scouts.length < 10) {
+            var newName = 'Scout' + Game.time;
+            console.log('Spawning new creep: ' + newName);
+            spawn.spawnCreep(getBodyParts('scout', maxEnergy), newName, {
+                memory: { role: 'scout' },
             });
+            return;
         }
     },
 };

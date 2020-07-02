@@ -9,13 +9,10 @@ var roleMinerEngergy = {
 
         if (creep.memory.currentMineID == null) {
             creep.memory.currentMineID = creep.room.memory.mineID;
-            console.log('CREEP ID: ' + creep.memory.currentMineID);
             if (creep.room.memory.mineID < sources.length - 1) {
                 creep.room.memory.mineID++;
-                console.log('New Counter: ' + creep.room.memory.mineID);
             } else {
                 creep.room.memory.mineID = 0;
-                console.log('Reset Counter: ' + creep.room.memory.mineID);
             }
         }
 
