@@ -4,6 +4,7 @@ var roleBuilder = require('role.builder');
 var roleRepairer = require('role.repairer');
 var roleMinerEnergy = require('role.miner.energy');
 var creepSpawner = require('creep.spawner');
+var roleClaimer = require('role.claimer');
 
 // RENEW CREEP LIVE https://docs.screeps.com/api/#StructureSpawn.renewCreep
 
@@ -11,7 +12,7 @@ module.exports.loop = function () {
     var tower = Game.getObjectById('5efdf7f058a8675cc2a88fad');
     if (tower) {
         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => structure.hits < structure.hitsMax,
+            filter: (structure) => structure.hits < structure.hitsMax && structure.hits < 200000,
         });
         if (closestDamagedStructure) {
             tower.repair(closestDamagedStructure);
@@ -22,18 +23,6 @@ module.exports.loop = function () {
             tower.attack(closestHostile);
         }
     }
-
-    /* var walls = Game.rooms["W6N1"].find(FIND_STRUCTURES, {
-       filter: (structure) => {
-           return structure.structureType === STRUCTURE_WALL;
-       }
-   })
-   walls.forEach((wall) => {
-       wall.repair()
-   })
-    
-    console.log(JSON.stringify(walls));*/
-
     for (var name in Game.rooms) {
         //   console.log('Room "' + name + '" has ' + Game.rooms[name].energyAvailable + ' energy');
     }
@@ -64,6 +53,9 @@ module.exports.loop = function () {
         }
         if (creep.memory.role == 'miner.energy') {
             roleMinerEnergy.run(creep);
+        }
+        if (creep.memory.role == 'claimer') {
+            roleClaimer.run(creep, 'W7N3');
         }
     }
 };

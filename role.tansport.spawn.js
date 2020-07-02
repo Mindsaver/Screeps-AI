@@ -1,4 +1,10 @@
 //Game.spawns['Spawn1'].spawnCreep( [WORK, CARRY, MOVE], 'Harvester1',     { memory: { role: 'harvester' } } );
+var storageStructures = {
+    spawn: 0,
+    extension: 10,
+    tower: 999,
+};
+
 var roleHarvester = {
     /** @param {Creep} creep **/
     run: function (creep) {
@@ -46,6 +52,17 @@ var roleHarvester = {
                     );
                 },
             });
+            targets = targets.sort(function (a, b) {
+                if (storageStructures[a.structureType] < storageStructures[b.structureType]) {
+                    return -1;
+                }
+                if (storageStructures[a.structureType] > storageStructures[b.structureType]) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
             if (targets.length > 0) {
                 if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
