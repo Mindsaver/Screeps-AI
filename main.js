@@ -77,7 +77,7 @@ module.exports.loop = function () {
         }
         var end = new Date().getTime();
         var time = end - start;
-        console.log('Spawner Execution time: ' + time);
+        // console.log('Spawner Execution time: ' + time);
     }
     //creepSpawner.run(spawn);
     for (var name in Memory.creeps) {
@@ -119,7 +119,7 @@ module.exports.loop = function () {
         }
         var end = new Date().getTime();
         var time = end - start;
-        console.log('Creep Execution time: ' + time);
+        //      console.log('Creep Execution time: ' + time);
     }
 
     Object.keys(Memory.rangeFarmData).forEach(function (room) {
@@ -128,7 +128,22 @@ module.exports.loop = function () {
 
     var endGlobal = new Date().getTime();
     var timeGlobal = endGlobal - startGlobal;
-    console.log('Global Execution time: ' + timeGlobal);
+    Game.spawns.Spawn1.room.visual.text('📌 Performance: ' + timeGlobal + ' ms', 0, 11, {
+        align: 'left',
+        opacity: 1,
+        color: '#FFFFFF',
+    });
+    Game.spawns.Spawn1.room.visual.text('📌 Creeps: ' + Object.keys(Memory.creeps).length, 0, 12, {
+        align: 'left',
+        opacity: 1,
+        color: '#FFFFFF',
+    });
+    Game.spawns.Spawn1.room.visual.text('📌 Ranged Rooms: ' + Object.keys(Memory.rangeFarmData).length, 0, 13, {
+        align: 'left',
+        opacity: 1,
+        color: '#FFFFFF',
+    });
+    // console.log('Global Execution time: ' + timeGlobal);
 
     // var zeit1 = performance.now();
     //console.log('Der Aufruf von machEtwas dauerte ' + (zeit1 - zeit0) + ' Millisekunden.');

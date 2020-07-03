@@ -39,6 +39,9 @@ var roleTransportRange = {
                 }
             }
         }
+        if (creep.store[RESOURCE_ENERGY] == creep.store.getCapacity() && !creep.memory.isTransporting) {
+            creep.memory.isTransporting = true;
+        }
 
         if (creep.room.name != creep.memory.room && !creep.memory.isTransporting) {
             // console.log('Moving to Ressource Room');
@@ -46,24 +49,28 @@ var roleTransportRange = {
             return;
         }
         if (creep.room.name == creep.memory.room && !creep.memory.isTransporting) {
-            let target2 = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-                filter: (structure) => {
-                    return structure.amount > 300;
-                },
-            });
-            if (target2 != null) {
+            let target = creep.pos.findClosestByRange(FIND_TOMBSTONES);
+            if (target == null) {
+                target = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+                    filter: (structure) => {
+                        return structure.amount > 300;
+                    },
+                });
+            }
+
+            if (target != null) {
                 //  console.log(target2);
-                if (creep.pickup(target2) == ERR_NOT_IN_RANGE) {
+                if (creep.pickup(target) == ERR_NOT_IN_RANGE) {
                     //   console.log('Moving to Dropped Ressources');
-                    creep.moveTo(target2, { stroke: '#0000ff' });
+                    creep.moveTo(target, { stroke: '#0000ff' });
                 }
                 if (creep.store[RESOURCE_ENERGY] == creep.store.getCapacity()) {
                     creep.memory.isTransporting = true;
                 }
             } else {
                 var source = creep.pos.findClosestByRange(FIND_SOURCES);
-                // creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
-                creep.moveTo(source, { stroke: '#0000ff' });
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
+                //  creep.moveTo(source, { stroke: '#0000ff' });
             }
             return;
         }
