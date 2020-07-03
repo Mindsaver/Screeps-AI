@@ -35,12 +35,12 @@ var roleHarvester = {
             }
             if (creep.memory.target != null) {
                 if (creep.withdraw(Game.getObjectById(creep.memory.target.id), RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(Game.getObjectById(creep.memory.target.id));
+                    creep.moveTo(Game.getObjectById(creep.memory.target.id), { stroke: '#0000ff' });
                 }
             } else {
                 let target2 = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
                 if (creep.pickup(target2) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target2);
+                    creep.moveTo(target2, { stroke: '#0000ff' });
                 }
             }
         } else {

@@ -38,12 +38,17 @@ var creepSettings = {
     },
     transport_build: {
         base: [MOVE, CARRY, WORK],
-        extensions: [MOVE, CARRY, WORK],
-        max: 700,
+        extensions: [MOVE, CARRY, MOVE, WORK],
+        max: 1000,
     },
     scout: {
         base: [MOVE],
         extensions: [],
+        max: 700,
+    },
+    defender: {
+        base: [ATTACK, ATTACK, MOVE, MOVE, TOUGH, TOUGH],
+        extensions: [MOVE, MOVE, TOUGH, TOUGH, ATTACK, TOUGH],
         max: 700,
     },
 };
@@ -81,6 +86,12 @@ function getBodyParts(creep, maxEnergy) {
 var roleBuilder = {
     /** @param {Creep} creep **/
     run: function (spawn) {
+        var rangeFarmRange = Memory.rangeFarmRange;
+
+        if (spawn.room.controller.level >= 3 && rangeFarmRange == 0) {
+            Memory.rangeFarmRange = 1;
+        }
+
         if (spawn.spawning) {
             var spawningCreep = Game.creeps[spawn.spawning.name];
             spawn.room.visual.text('🛠️' + spawningCreep.memory.role, spawn.pos.x + 1, spawn.pos.y, {
@@ -128,7 +139,7 @@ var roleBuilder = {
         }
         var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
 
-        if (upgraders.length < 4) {
+        if (upgraders.length < 5) {
             var newName = 'Upgrader' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('transport_build', maxEnergy), newName, {
@@ -159,7 +170,7 @@ var roleBuilder = {
         }
         var scouts = _.filter(Game.creeps, (creep) => creep.memory.role == 'scout');
 
-        if (scouts.length < 5) {
+        if (scouts.length < 2) {
             var newName = 'Scout' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('scout', maxEnergy), newName, {
@@ -167,47 +178,64 @@ var roleBuilder = {
             });
             return;
         }
+        var defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'defender');
 
-        Object.keys(Memory.scoutData)
-            .filter(
-                (x) =>
-                    Game.map.findRoute(Memory.scoutData[x].room, spawn.room.name).length <= 2 &&
-                    Memory.scoutData[x].sources.length >= 1
-            )
-            .forEach(function (room) {
-                if (room == spawn.room.name) return;
-                var rangeMiners = _.filter(
-                    Game.creeps,
-                    (creep) =>
-                        creep.memory.role == 'miner.energy' && creep.memory.room == room && creep.ticksToLive > 50
-                );
-                //
-                if (rangeMiners.length < Memory.scoutData[room].sources.length) {
-                    var newName = 'Range Miner Energy (' + room + ') #' + Game.time;
-                    //   console.log('Spawning new creep: ' + newName);
-                    spawn.spawnCreep(getBodyParts('miner_range', maxEnergy), newName, {
-                        memory: { role: 'miner.energy', room: room, energyUsed: maxEnergy },
-                    });
-                    return;
-                }
-                var rangeTransporters = _.filter(
-                    Game.creeps,
-                    (creep) =>
-                        creep.memory.role == 'transport.range' && creep.memory.room == room && creep.ticksToLive > 50
-                );
-                if (
-                    rangeTransporters.length <
-                    Memory.scoutData[room].sources.length * 2 + Memory.scoutData[room].distanceToBase.length
-                ) {
-                    var newName = 'Range Transport (' + room + ') #' + Game.time;
-                    //     console.log('Spawning new creep: ' + newName);
-                    spawn.spawnCreep(getBodyParts('transport_range', maxEnergy), newName, {
-                        memory: { role: 'transport.range', room: room, energyUsed: maxEnergy },
-                    });
+        if (defenders.length < 2) {
+            var newName = 'Defender' + Game.time;
+            console.log('Spawning new creep: ' + newName);
+            spawn.spawnCreep(getBodyParts('defender', maxEnergy), newName, {
+                memory: { role: 'defender' },
+            });
+            return;
+        }
+        var BreakException = {};
+        try {
+            Object.keys(Memory.rangeFarmData).forEach(function (room) {
+                if (room != spawn.room.name) {
+                    var rangeMiners = _.filter(
+                        Game.creeps,
+                        (creep) =>
+                            creep.memory.role == 'miner.energy' && creep.memory.room == room && creep.ticksToLive > 100
+                    );
+                    //
+                    if (rangeMiners.length < Memory.scoutData[room].sources.length) {
+                        var newName = 'Range Miner Energy (' + room + ') #' + Game.time;
+                        //  console.log('Spawning new creep: ' + newName);
+                        spawn.spawnCreep(getBodyParts('miner_range', maxEnergy), newName, {
+                            memory: { role: 'miner.energy', room: room, energyUsed: maxEnergy },
+                        });
+                        throw BreakException;
+                    }
+                    var rangeTransporters = _.filter(
+                        Game.creeps,
+                        (creep) =>
+                            creep.memory.role == 'transport.range' &&
+                            creep.memory.room == room &&
+                            creep.ticksToLive > 100
+                    );
+                    if (
+                        rangeTransporters.length <
+                        Memory.scoutData[room].sources.length * 2 + Memory.scoutData[room].distanceToBase.length
+                    ) {
+                        var newName = 'Range Transport (' + room + ') #' + Game.time;
+                        //   console.log('Spawning new creep: ' + newName);
+                        spawn.spawnCreep(getBodyParts('transport_range', maxEnergy), newName, {
+                            memory: { role: 'transport.range', room: room, energyUsed: maxEnergy },
+                        });
 
-                    return;
+                        throw BreakException;
+                    }
                 }
             });
+        } catch (e) {
+            if (e !== BreakException) throw e;
+            return;
+        }
+        /* if (filteredRangeFarms.length > 0) {
+            Memory.rangeFarmRange = Memory.rangeFarmRange + 1;
+        }*/
+        console.log('END');
+        /*     */
     },
 };
 

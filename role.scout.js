@@ -102,7 +102,7 @@ var roleScout = {
                 creep.memory.nextRoom == undefined;
                 return;
             }
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.nextRoom));
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.nextRoom), { stroke: '#00ff00' });
             //console.log(creep.moveTo(exitDir[0]));
         }
     },
