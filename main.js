@@ -59,14 +59,17 @@ module.exports.loop = function () {
         if (closestHostile) {
             tower.attack(closestHostile);
         } else {
-            var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax && structure.hits < 200000,
-            });
-            if (closestDamagedStructure) {
-                tower.repair(closestDamagedStructure);
+            if (tower.store[RESOURCE_ENERGY] > 500) {
+                var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
+                    filter: (structure) => structure.hits < structure.hitsMax && structure.hits < 400000,
+                });
+                if (closestDamagedStructure) {
+                    tower.repair(closestDamagedStructure);
+                }
             }
         }
     }
+
     for (var name in Game.rooms) {
         //   console.log('Room "' + name + '" has ' + Game.rooms[name].energyAvailable + ' energy');
     }
@@ -109,19 +112,14 @@ module.exports.loop = function () {
             if (creep.memory.role == 'transport.range') {
                 roleTransportRange.run(creep);
             }
-
-            /* if (creep.memory.role == 'claimer') {
-            roleClaimer.run(creep, 'W7N3');
-        }*/
             if (creep.memory.role == 'scout') {
                 roleScout.run(creep);
             }
         }
         var end = new Date().getTime();
         var time = end - start;
-        //      console.log('Creep Execution time: ' + time);
+        //      console.log('Creep Execution time: ' + time);*
     }
-
     Object.keys(Memory.rangeFarmData).forEach(function (room) {
         defendRoom(room);
     });
@@ -143,6 +141,12 @@ module.exports.loop = function () {
         opacity: 1,
         color: '#FFFFFF',
     });
+    Game.spawns.Spawn1.room.visual.text('📌 Farm Range: ' + Memory.rangeFarmRange, 0, 15, {
+        align: 'left',
+        opacity: 1,
+        color: '#FFFFFF',
+    });
+
     // console.log('Global Execution time: ' + timeGlobal);
 
     // var zeit1 = performance.now();
@@ -152,18 +156,26 @@ function defendRoom(roomName) {
     if (Game.rooms[roomName] != undefined) {
         var hostiles = Game.rooms[roomName].find(FIND_HOSTILE_CREEPS);
         var defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'defender');
-        if (hostiles.length > 0) {
-            Game.notify(`User ${hostiles[0].id} spotted in room ${roomName}`);
 
-            defenders.forEach((defender) => {
-                if (defender.attack(hostiles[0]) == ERR_NOT_IN_RANGE) {
-                    defender.moveTo(hostiles[0], { stroke: '#ff0000' });
+        defenders.forEach((defender) => {
+            if (hostiles.length > 0) {
+                console.log(`User ${hostiles[0].id} spotted in room ${roomName}`);
+                if (!defender.memory.attackTarget) {
+                    defender.memory.attackTarget = hostiles[0].id;
                 }
-            });
-        } else {
-            defenders.forEach((defender) => {
+                var enemy = Game.getObjectById(defender.memory.attackTarget);
+                console.log(enemy);
+                if (enemy != null) {
+                    if (defender.attack(enemy) == ERR_NOT_IN_RANGE) {
+                        defender.moveTo(enemy, { visualizePathStyle: { stroke: '#FF0000' } });
+                    }
+                } else {
+                    defender.memory.attackTarget = null;
+                }
+            }
+            if (!defender.memory.attackTarge) {
                 defender.moveTo(Game.flags.MainDefence, { stroke: '#ff0000' });
-            });
-        }
+            }
+        });
     }
 }

@@ -47,9 +47,9 @@ var creepSettings = {
         max: 700,
     },
     defender: {
-        base: [ATTACK, ATTACK, MOVE, MOVE, TOUGH, TOUGH],
-        extensions: [MOVE, MOVE, TOUGH, TOUGH, ATTACK, TOUGH],
-        max: 700,
+        base: [MOVE, MOVE, TOUGH, TOUGH, ATTACK, ATTACK],
+        extensions: [MOVE, MOVE, TOUGH, TOUGH, MOVE, ATTACK],
+        max: 1000,
     },
 };
 
@@ -86,15 +86,15 @@ function getBodyParts(creep, maxEnergy) {
 var roleBuilder = {
     /** @param {Creep} creep **/
     run: function (spawn) {
+        Memory.rangeFarmRange = 1;
         var rangeFarmRange = Memory.rangeFarmRange;
-
         if (spawn.room.controller.level >= 3 && rangeFarmRange == 0) {
             Memory.rangeFarmRange = 1;
         }
 
         if (spawn.spawning) {
             var spawningCreep = Game.creeps[spawn.spawning.name];
-            spawn.room.visual.text('🛠️' + spawningCreep.memory.role, spawn.pos.x + 1, spawn.pos.y, {
+            spawn.room.visual.text('🛠️ ' + spawn.spawning.name, spawn.pos.x + 1, spawn.pos.y, {
                 align: 'left',
                 opacity: 0.8,
             });
@@ -149,9 +149,19 @@ var roleBuilder = {
 
             return;
         }
+        var defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'defender');
+
+        if (defenders.length < 2) {
+            var newName = 'Defender' + Game.time;
+            console.log('Spawning new creep: ' + newName);
+            spawn.spawnCreep(getBodyParts('defender', maxEnergy), newName, {
+                memory: { role: 'defender' },
+            });
+            return;
+        }
         var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
 
-        if (upgraders.length < 6) {
+        if (upgraders.length < 4) {
             var newName = 'Upgrader' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('transport_build', maxEnergy), newName, {
@@ -161,7 +171,7 @@ var roleBuilder = {
         }
         var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
 
-        if (builders.length < 2) {
+        if (builders.length < 1) {
             var newName = 'Builder' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('builder', maxEnergy), newName, {
@@ -190,16 +200,7 @@ var roleBuilder = {
             });
             return;
         }
-        var defenders = _.filter(Game.creeps, (creep) => creep.memory.role == 'defender');
 
-        if (defenders.length < 2) {
-            var newName = 'Defender' + Game.time;
-            console.log('Spawning new creep: ' + newName);
-            spawn.spawnCreep(getBodyParts('defender', maxEnergy), newName, {
-                memory: { role: 'defender' },
-            });
-            return;
-        }
         var BreakException = {};
         try {
             Object.keys(Memory.rangeFarmData).forEach(function (room) {
@@ -243,10 +244,13 @@ var roleBuilder = {
             if (e !== BreakException) throw e;
             return;
         }
-        /* if (filteredRangeFarms.length > 0) {
+
+        /* console.log('end');
+        if (Object.keys(Memory.rangeFarmData).length > 0) {
             Memory.rangeFarmRange = Memory.rangeFarmRange + 1;
-        }*/
-        //    console.log('END');
+            console.log('EXTENDED to:' + Memory.rangeFarmRange);
+        }
+
         /*     */
     },
 };
