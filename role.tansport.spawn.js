@@ -25,7 +25,9 @@ var roleHarvester = {
                 var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (
-                            structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity() > 100
+                            (structure.structureType == STRUCTURE_CONTAINER &&
+                                structure.store.getUsedCapacity() > 100) ||
+                            (structure.structureType == STRUCTURE_STORAGE && structure.store.getUsedCapacity() > 100)
                         );
                     },
                 });
@@ -46,12 +48,30 @@ var roleHarvester = {
                 filter: (structure) => {
                     return (
                         (structure.structureType == STRUCTURE_EXTENSION ||
-                            structure.structureType == STRUCTURE_SPAWN ||
-                            structure.structureType == STRUCTURE_TOWER) &&
+                            structure.structureType == STRUCTURE_SPAWN) &&
                         structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                     );
                 },
             });
+            var stores = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (
+                        (structure.structureType == STRUCTURE_CONTAINER && structure.store.getUsedCapacity() > 500) ||
+                        (structure.structureType == STRUCTURE_STORAGE && structure.store.getUsedCapacity() > 5000)
+                    );
+                },
+            });
+
+            if (targets.length == 0 && stores.length > 0) {
+                targets = creep.room.find(FIND_STRUCTURES, {
+                    filter: (structure) => {
+                        return (
+                            structure.structureType == STRUCTURE_TOWER &&
+                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                        );
+                    },
+                });
+            }
             targets = targets.sort(function (a, b) {
                 if (storageStructures[a.structureType] < storageStructures[b.structureType]) {
                     return -1;

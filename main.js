@@ -6,6 +6,7 @@ var roleMinerEnergy = require('role.miner.energy');
 var creepSpawner = require('creep.spawner');
 var roleClaimer = require('role.claimer');
 var roleScout = require('role.scout');
+var roleTransportRange = require('role.transport.range');
 
 // RENEW CREEP LIVE https://docs.screeps.com/api/#StructureSpawn.renewCreep
 
@@ -14,19 +15,25 @@ module.exports.loop = function () {
     if (Memory.scoutData == null) {
         Memory.scoutData = {};
     }
+    if (Memory.insufficentFarmRoute == null) {
+        Memory.insufficentFarmRoute = {};
+    }
+    if (Memory.sufficentFarmRoute == null) {
+        Memory.sufficentFarmRoute = {};
+    }
 
-    var tower = Game.getObjectById('5efdf7f058a8675cc2a88fad');
+    var tower = Game.getObjectById('5efed3cb60923c5cc1226994');
     if (tower) {
-        var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => structure.hits < structure.hitsMax && structure.hits < 200000,
-        });
-        if (closestDamagedStructure) {
-            tower.repair(closestDamagedStructure);
-        }
-
         var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if (closestHostile) {
             tower.attack(closestHostile);
+        } else {
+            var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: (structure) => structure.hits < structure.hitsMax && structure.hits < 200000,
+            });
+            if (closestDamagedStructure) {
+                tower.repair(closestDamagedStructure);
+            }
         }
     }
     for (var name in Game.rooms) {
@@ -39,7 +46,7 @@ module.exports.loop = function () {
     for (var name in Memory.creeps) {
         if (!Game.creeps[name]) {
             delete Memory.creeps[name];
-            console.log('Clearing non-existing creep memory:', name);
+            //  console.log('Clearing non-existing creep memory:', name);
         }
     }
 
@@ -60,6 +67,10 @@ module.exports.loop = function () {
         if (creep.memory.role == 'miner.energy') {
             roleMinerEnergy.run(creep);
         }
+        if (creep.memory.role == 'transport.range') {
+            roleTransportRange.run(creep);
+        }
+
         /* if (creep.memory.role == 'claimer') {
             roleClaimer.run(creep, 'W7N3');
         }*/

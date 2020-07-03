@@ -16,9 +16,9 @@ function storeExplorationInfo(creep) {
         //  exits: creep.room.find(FIND_EXIT),
         minerals: creep.room.find(FIND_MINERALS),
         // hostileCreeps: creep.room.find(FIND_CREEPS),
-        hostileStructures: creep.room.find(FIND_HOSTILE_STRUCTURES),
-        hostileSpawns: creep.room.find(FIND_HOSTILE_SPAWNS),
-        hostileConstructions: creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES),
+        hostileStructures: creep.room.find(FIND_HOSTILE_STRUCTURES).length,
+        hostileSpawns: creep.room.find(FIND_HOSTILE_SPAWNS).length,
+        hostileConstructions: creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES).length,
         distanceToBase: Game.map.findRoute(Game.spawns['Spawn1'].room, creep.room),
     };
     // console.log(scoutData.distanceToBase.length);
@@ -55,6 +55,7 @@ function storeExplorationInfo(creep) {
 
 var roleScout = {
     run: function (creep) {
+        // creep.suicide();
         // console.log(creep.room.name);
         // var re = /(\w)(\d{1,2})(\w)(\d{1,2})/;
         //  var found = creep.room.name.match(re);
@@ -81,7 +82,8 @@ var roleScout = {
                 countExits++;
             }
 
-            var exitID = getRandomInt(countExits);
+            var exitID = getRandomInt(0, countExits);
+            //   console.log(exitID);
             // console.log('OLD ROOM:' + creep.memory.nextRoom);
             if (exitID == 0) {
                 creep.memory.nextRoom = exits['1'];
@@ -90,7 +92,7 @@ var roleScout = {
             } else if (exitID == 2) {
                 creep.memory.nextRoom = exits['5'];
             } else if (exitID == 3) {
-                creep.memory.nextRoom = Game.rooms[exits['7']];
+                creep.memory.nextRoom = exits['7'];
             }
             // console.log('NEW ROOM:' + creep.memory.nextRoom);
         }
@@ -107,6 +109,9 @@ var roleScout = {
 };
 
 module.exports = roleScout;
-function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }

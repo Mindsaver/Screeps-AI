@@ -2,6 +2,12 @@
 var roleMinerEngergy = {
     /** @param {Creep} creep **/
     run: function (creep) {
+        //  console.log(creep.memory.room);
+        if (creep.room.name != creep.memory.room && creep.memory.room != undefined) {
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
+            return;
+        }
+
         var sources = creep.room.find(FIND_SOURCES);
         if (creep.room.memory.mineID == null) {
             creep.room.memory.mineID = 0;
@@ -14,6 +20,10 @@ var roleMinerEngergy = {
             } else {
                 creep.room.memory.mineID = 0;
             }
+        }
+        if (creep.memory.room == 'W8N2') {
+            //  console.log(sources[creep.memory.currentMineID]);
+            //  console.log(creep.harvest(sources[creep.memory.currentMineID]));
         }
 
         if (creep.harvest(sources[creep.memory.currentMineID]) == ERR_NOT_IN_RANGE) {
