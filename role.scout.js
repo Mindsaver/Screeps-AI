@@ -14,9 +14,8 @@ function storeExplorationInfo(creep) {
         var scoutData = {
             room: creep.room.name,
             sources: creep.room.find(FIND_SOURCES),
-            //  exits: creep.room.find(FIND_EXIT),
             minerals: creep.room.find(FIND_MINERALS),
-            // hostileCreeps: creep.room.find(FIND_CREEPS),
+            hostileCreeps: creep.room.find(FIND_HOSTILE_CREEPS).length,
             hostileStructures: creep.room.find(FIND_HOSTILE_STRUCTURES).length,
             hostileSpawns: creep.room.find(FIND_HOSTILE_SPAWNS).length,
             hostileConstructions: creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES).length,

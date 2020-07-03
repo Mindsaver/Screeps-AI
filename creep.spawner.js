@@ -47,8 +47,8 @@ var creepSettings = {
         max: 700,
     },
     defender: {
-        base: [MOVE, MOVE, TOUGH, TOUGH, ATTACK, ATTACK],
-        extensions: [MOVE, MOVE, TOUGH, TOUGH, MOVE, ATTACK],
+        base: [MOVE, MOVE, TOUGH, TOUGH, RANGED_ATTACK],
+        extensions: [MOVE, MOVE, TOUGH, RANGED_ATTACK],
         max: 1000,
     },
 };
@@ -171,7 +171,7 @@ var roleBuilder = {
         }
         var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
 
-        if (builders.length < 1) {
+        if (builders.length < 2) {
             var newName = 'Builder' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('builder', maxEnergy), newName, {
@@ -192,7 +192,7 @@ var roleBuilder = {
         }
         var scouts = _.filter(Game.creeps, (creep) => creep.memory.role == 'scout');
 
-        if (scouts.length < 0) {
+        if (scouts.length < 10) {
             var newName = 'Scout' + Game.time;
             console.log('Spawning new creep: ' + newName);
             spawn.spawnCreep(getBodyParts('scout', maxEnergy), newName, {
@@ -228,7 +228,7 @@ var roleBuilder = {
                     );
                     if (
                         rangeTransporters.length <
-                        Memory.scoutData[room].sources.length * 2 + Memory.scoutData[room].distanceToBase.length
+                        Memory.scoutData[room].sources.length * 2 + (Memory.scoutData[room].distanceToBase.length - 1)
                     ) {
                         var newName = 'Range Transport (' + room + ') #' + Game.time;
                         //   console.log('Spawning new creep: ' + newName);
@@ -245,9 +245,9 @@ var roleBuilder = {
             return;
         }
 
-        /* console.log('end');
+        console.log('end');
         if (Object.keys(Memory.rangeFarmData).length > 0) {
-            Memory.rangeFarmRange = Memory.rangeFarmRange + 1;
+            Memory.rangeFarmRange = 2;
             console.log('EXTENDED to:' + Memory.rangeFarmRange);
         }
 

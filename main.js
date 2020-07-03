@@ -30,6 +30,12 @@ module.exports.loop = function () {
         Memory.rangeFarmData = {};
     }
 
+    const linkFrom = Game.getObjectById('5efdd2f8fb6b304f417d6de4');
+
+    const linkTo = linkFrom.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: { structureType: STRUCTURE_LINK } })[0];
+
+    //   linkFrom.transferEnergy(linkTo);
+
     if (updateDataTimer > 60) {
         var filteredRangeData = {};
         Object.keys(Memory.scoutData)
@@ -160,7 +166,7 @@ function defendRoom(roomName) {
             if (defender.memory.attackTarget != null) {
                 var enemy = Game.getObjectById(defender.memory.attackTarget);
                 if (enemy != null) {
-                    if (defender.attack(enemy) == ERR_NOT_IN_RANGE) {
+                    if (defender.rangedAttack(enemy) == ERR_NOT_IN_RANGE) {
                         defender.moveTo(enemy, { visualizePathStyle: { stroke: '#FF0000' } });
                     }
                 } else {
